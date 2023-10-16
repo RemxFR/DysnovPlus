@@ -1,8 +1,6 @@
 package com.myStreaming.DysnovPlus.dao.service;
 
 import com.myStreaming.DysnovPlus.dao.repository.IRecompenseRepo;
-import com.myStreaming.DysnovPlus.dao.repository.IRecompenseRepo;
-import com.myStreaming.DysnovPlus.entity.Recompense;
 import com.myStreaming.DysnovPlus.entity.Recompenses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

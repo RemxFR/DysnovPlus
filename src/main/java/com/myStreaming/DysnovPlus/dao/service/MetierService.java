@@ -1,7 +1,6 @@
 package com.myStreaming.DysnovPlus.dao.service;
 
 import com.myStreaming.DysnovPlus.dao.repository.IMetierRepo;
-import com.myStreaming.DysnovPlus.entity.EMetier;
 import com.myStreaming.DysnovPlus.entity.Metier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,9 +22,6 @@ public class MetierService {
         Metier metierAEnregistrer = null;
         try {
             if (metier != null) {
-                if(metier.getMetier().equals(EMetier.ACTEUR.name())) {
-
-                }
                 metierAEnregistrer = this.iMetierRepo.save(metier);
             }
         } catch (Exception e) {
