@@ -8,6 +8,7 @@ public enum EGenreFilm {
     ANTICIPATION("Anticipation"),
     CATASTROPHE("Catastrophe"),
     CAPE_ET_EPEE("De cape et d'épée"),
+    CHRETIEN("Chrétien"),
     COMEDIE("Comédie"),
     COMEDIE_MUSICALE("Comédie musicale"),
     DRAME("Drame"),
@@ -19,6 +20,7 @@ public enum EGenreFilm {
     PEPLUM("Péplum"),
     ROMANCE("Romance"),
     SCIFI("Science-Fiction"),
+    SPIRITUEL("Spirituel"),
     THRILLER("Thriller"),
     WESTERN("Western");
 

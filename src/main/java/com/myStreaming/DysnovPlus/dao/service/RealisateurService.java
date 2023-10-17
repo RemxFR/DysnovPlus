@@ -1,27 +1,41 @@
 package com.myStreaming.DysnovPlus.dao.service;
 
 import com.myStreaming.DysnovPlus.dao.repository.IRealisateurRepo;
+import com.myStreaming.DysnovPlus.entity.Metier;
 import com.myStreaming.DysnovPlus.entity.Personne;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class RealisateurService {
 
     private IRealisateurRepo realisateurRepo;
+    private MetierService metierService;
 
     @Autowired
-    public RealisateurService(IRealisateurRepo realisateurRepo) {
+    public RealisateurService(IRealisateurRepo realisateurRepo, MetierService metierService) {
         this.realisateurRepo = realisateurRepo;
+        this.metierService = metierService;
     }
 
     public Personne creerRealisateur(Personne realisateur) {
         Personne nouveauRealisateur = null;
+        List<Metier> metierListe = new ArrayList<>();
         try {
+            if (realisateur.getMetiers() != null) {
+                for (int i = 0; i < realisateur.getMetiers().size(); i++) {
+                    Metier metier = this.trouverMetierParNom(realisateur.getMetiers().get(i).getMetier());
+                    metierListe.add(metier);
+                }
+                realisateur.setMetiers(metierListe);
+            }
             nouveauRealisateur = this.realisateurRepo.save(realisateur);
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,4 +127,13 @@ public class RealisateurService {
         }
         return realisateur;
     }
+
+    private Metier trouverMetierParNom(String metierLabel) {
+        Metier metier = null;
+        if (metierLabel != null && !metierLabel.equals("")) {
+            metier = this.metierService.getMetier(metierLabel);
+        }
+        return metier;
+    }
+
 }

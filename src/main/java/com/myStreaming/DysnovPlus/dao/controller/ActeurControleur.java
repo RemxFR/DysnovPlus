@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,8 +28,13 @@ public class ActeurControleur {
         this.acteurService = acteurService;
     }
 
-    @GetMapping("trouver/{id}")
-    private ResponseEntity<Personne> trouverActeur(@RequestParam("id") Long id) {
+    @GetMapping("/infos")
+    private ResponseEntity<String> getInfos() {
+        return new ResponseEntity<>("Tout est ok !", HttpStatus.OK);
+    }
+
+    @GetMapping("/trouver/{id}")
+    private ResponseEntity<Personne> trouverActeur(@PathVariable("id") Long id) {
         Personne acteurCherche = null;
         if (id != null && id > 0) {
             acteurCherche = this.acteurService.trouverActeur(id);
@@ -38,8 +44,8 @@ public class ActeurControleur {
 
     }
 
-    @GetMapping("trouver/{nom}")
-    private ResponseEntity<List<Personne>> trouverActeurParNom(@RequestParam("nom") String nom) {
+    @GetMapping("/trouver/{nom}")
+    private ResponseEntity<List<Personne>> trouverActeurParNom(@PathVariable("nom") String nom) {
         List<Personne> acteurCherche = null;
         if (nom != null && !nom.equals("")) {
             acteurCherche = this.acteurService.trouverActeurParNom(nom);
@@ -48,8 +54,8 @@ public class ActeurControleur {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("trouver/{nom}&{prenom}")
-    private ResponseEntity<Personne> trouverActeurParNomEtPrenom(@RequestParam("nom") String nom, @RequestParam String prenom) {
+    @GetMapping("/trouver/{nom}&{prenom}")
+    private ResponseEntity<Personne> trouverActeurParNomEtPrenom(@PathVariable("nom") String nom, @PathVariable String prenom) {
         Personne acteurCherche = null;
         if ((nom != null && !nom.equals("")) && (prenom != null && !prenom.equals(""))) {
             acteurCherche = this.acteurService.trouverActeurParNomEtPrenom(nom, prenom);
@@ -58,6 +64,7 @@ public class ActeurControleur {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping("/trouver-tous")
     private ResponseEntity<List<Personne>> trouverTousLesActeurs() {
         List<Personne> personnes = this.acteurService.trouverTousLesActeurs();
         return new ResponseEntity<>(personnes, HttpStatus.OK);
@@ -75,7 +82,7 @@ public class ActeurControleur {
     }
 
     @PutMapping("/modifier/{id}")
-    private ResponseEntity<Personne> modifierActeur(@RequestParam("id") Long id, @RequestBody Personne acteurModife) {
+    private ResponseEntity<Personne> modifierActeur(@PathVariable("id") Long id, @RequestBody Personne acteurModife) {
         Personne acteurAModifie = null;
         if (acteurModife != null) {
             acteurAModifie = this.acteurService.modifierActeur(id, acteurAModifie);
@@ -85,14 +92,14 @@ public class ActeurControleur {
     }
 
     @DeleteMapping("/supprimer/{id}")
-    private ResponseEntity supprimerActeur(@RequestParam("id") Long id) {
+    private ResponseEntity<String> supprimerActeur(@PathVariable("id") Long id) {
         boolean estSupprime = false;
         if (id != null && id > 0) {
            estSupprime = this.acteurService.supprimerActeur(id);
            if(estSupprime) {
-               return new ResponseEntity(HttpStatus.OK);
+               return new ResponseEntity("Suppression réussie", HttpStatus.OK);
            }
         }
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity("Erreur lors de la suppression", HttpStatus.BAD_REQUEST);
     }
 }

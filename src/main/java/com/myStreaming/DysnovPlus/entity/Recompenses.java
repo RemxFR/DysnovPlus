@@ -1,6 +1,7 @@
 package com.myStreaming.DysnovPlus.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,6 +33,7 @@ public class Recompenses {
     @Column(name = "recompense", unique = true)
     private String recompense;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "recompenses")
     private List<Personne> personnes;
 }

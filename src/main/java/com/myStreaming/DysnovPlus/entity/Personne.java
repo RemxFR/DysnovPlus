@@ -1,6 +1,7 @@
 package com.myStreaming.DysnovPlus.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,6 +22,7 @@ import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "t_personne")
@@ -60,6 +62,7 @@ public class Personne {
             inverseJoinColumns = @JoinColumn(name = "metier", referencedColumnName = "id"))
     private List<Metier> metiers;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "personnes")
     private List<Film> filmographie;
 
