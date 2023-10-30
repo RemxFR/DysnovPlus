@@ -38,28 +38,29 @@ public class RealisateurControleur {
 
     }
 
-    @GetMapping("trouver/{nom}")
-    private ResponseEntity<List<Personne>> trouverRealisateurParNom(@RequestParam("nom") String nom) {
+    @GetMapping("trouver/nom={nom}&limit={sqlRowLimit}")
+    private ResponseEntity<List<Personne>> trouverRealisateurParNom(@RequestParam("nom") String nom, @RequestParam(value = "sqlRowLimit", required = false) Integer sqlRowLimit) {
         List<Personne> realisateurCherche = null;
         if (nom != null && !nom.equals("")) {
-            realisateurCherche = this.realisateurService.trouverRealisateurParNom(nom);
+            realisateurCherche = this.realisateurService.trouverRealisateurParNom(nom, sqlRowLimit);
             return new ResponseEntity<>(realisateurCherche, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("trouver/{nom}&{prenom}")
-    private ResponseEntity<Personne> trouverRealisateurParNomEtPrenom(@RequestParam("nom") String nom, @RequestParam String prenom) {
+    @GetMapping("trouver/{nom}&{prenom}&limit={sqlRowLimit}")
+    private ResponseEntity<Personne> trouverRealisateurParNomEtPrenom(@RequestParam("nom") String nom, @RequestParam String prenom, @RequestParam(value = "sqlRowLimit", required = false) Integer sqlRowLimit) {
         Personne realisateurCherche = null;
         if ((nom != null && !nom.equals("")) && (prenom != null && !prenom.equals(""))) {
-            realisateurCherche = this.realisateurService.trouverrealisateurParNomEtPrenom(nom, prenom);
+            realisateurCherche = this.realisateurService.trouverrealisateurParNomEtPrenom(nom, prenom, sqlRowLimit);
             return new ResponseEntity<>(realisateurCherche, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    private ResponseEntity<List<Personne>> trouverTousLesRealisateurs() {
-        List<Personne> personnes = this.realisateurService.trouverTousLesRealisateurs();
+    @GetMapping("trouver-tous/limit={sqlRowLimit}")
+    private ResponseEntity<List<Personne>> trouverTousLesRealisateurs(@RequestParam(value = "sqlRowLimit", required = false) Integer sqlRowLimit) {
+        List<Personne> personnes = this.realisateurService.trouverTousLesRealisateurs(sqlRowLimit);
         return new ResponseEntity<>(personnes, HttpStatus.OK);
     }
 

@@ -1,23 +1,26 @@
 package com.myStreaming.DysnovPlus.dao.service;
 
 import com.myStreaming.DysnovPlus.dao.repository.IRealisateurRepo;
+import com.myStreaming.DysnovPlus.entity.ESqlQueryUtils;
 import com.myStreaming.DysnovPlus.entity.Metier;
 import com.myStreaming.DysnovPlus.entity.Personne;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class RealisateurService {
 
     private IRealisateurRepo realisateurRepo;
     private MetierService metierService;
+    @PersistenceContext
+    EntityManager entityManager;
 
     @Autowired
     public RealisateurService(IRealisateurRepo realisateurRepo, MetierService metierService) {
@@ -78,10 +81,13 @@ public class RealisateurService {
         return realisateurATrouver;
     }
 
-    public List<Personne> trouverTousLesRealisateurs() {
+    public List<Personne> trouverTousLesRealisateurs(Integer sqlRowLimit) {
         List<Personne> realisateurs = null;
         try {
-            realisateurs = this.realisateurRepo.findAll();
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
+            String queryWithSqlRowLimit = ESqlQueryUtils.FIND_PERSON_QUERY.getLabel() + ESqlQueryUtils.REAL_QUERY.getLabel() + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = this.entityManager.createNativeQuery(queryWithSqlRowLimit, Personne.class);
+            this.buildRealisateurListe(query, realisateurs);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -102,26 +108,26 @@ public class RealisateurService {
         return estSupprime;
     }
 
-    public List<Personne> trouverRealisateurParNom(String nom) {
+    public List<Personne> trouverRealisateurParNom(String nom, Integer sqlRowLimit) {
         List<Personne> listeRealisateursParNom = new ArrayList<>();
         try {
-            Optional<List<Personne>> optionalList = this.realisateurRepo.trouverParNom(nom);
-            if (optionalList.isPresent()) {
-                listeRealisateursParNom = optionalList.get();
-            }
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
+            String queryWithSqlRowLimit = ESqlQueryUtils.FIND_PERSON_QUERY.getLabel() + ESqlQueryUtils.NOM_QUERY.getLabel() + ESqlQueryUtils.REAL_QUERY.getLabel() + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = this.entityManager.createNativeQuery(queryWithSqlRowLimit, Personne.class);
+            this.buildRealisateurListe(query, listeRealisateursParNom);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return listeRealisateursParNom;
     }
 
-    public Personne trouverrealisateurParNomEtPrenom(String nom, String prenom) {
+    public Personne trouverrealisateurParNomEtPrenom(String nom, String prenom, Integer sqlRowLimit) {
         Personne realisateur = null;
         try {
-            Optional<Personne> optional = this.realisateurRepo.trouverParNomEtPrenom(nom, prenom);
-            if (optional.isPresent()) {
-                realisateur = optional.get();
-            }
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
+            String queryWithSqlRowLimit = ESqlQueryUtils.FIND_PERSON_QUERY.getLabel() + ESqlQueryUtils.NOM_PRENOM_QUERY.getLabel() + ESqlQueryUtils.REAL_QUERY.getLabel() + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = this.entityManager.createNativeQuery(queryWithSqlRowLimit, Personne.class);
+            realisateur = (Personne) query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -136,4 +142,23 @@ public class RealisateurService {
         return metier;
     }
 
+
+    private static void buildRealisateurListe(Query query, List<Personne> realisateurs) {
+        List<Personne> queryResultList = (List<Personne>) query.getResultList();
+        if(!queryResultList.isEmpty()) {
+            for (Personne real: queryResultList) {
+                Personne realTrouve = Personne.builder()
+                        .id(real.getId())
+                        .nom(real.getNom())
+                        .prenom(real.getPrenom())
+                        .age(real.getAge())
+                        .dateNaissance(real.getDateNaissance())
+                        .genrePersonne(real.getGenrePersonne())
+                        .nationalite(real.getNationalite())
+                        .metiers(real.getMetiers())
+                        .build();
+                realisateurs.add(realTrouve);
+            }
+        }
+    }
 }

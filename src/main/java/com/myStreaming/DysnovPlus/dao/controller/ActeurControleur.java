@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,12 +27,7 @@ public class ActeurControleur {
         this.acteurService = acteurService;
     }
 
-    @GetMapping("/infos")
-    private ResponseEntity<String> getInfos() {
-        return new ResponseEntity<>("Tout est ok !", HttpStatus.OK);
-    }
-
-    @GetMapping("/trouver/{id}")
+    @GetMapping("/trouver/id={id}")
     private ResponseEntity<Personne> trouverActeur(@PathVariable("id") Long id) {
         Personne acteurCherche = null;
         if (id != null && id > 0) {
@@ -44,29 +38,29 @@ public class ActeurControleur {
 
     }
 
-    @GetMapping("/trouver/{nom}")
-    private ResponseEntity<List<Personne>> trouverActeurParNom(@PathVariable("nom") String nom) {
+    @GetMapping("/trouver/nom={nom}&limit={slqRowLimit}")
+    private ResponseEntity<List<Personne>> trouverActeurParNom(@PathVariable("nom") String nom, @PathVariable(name = "slqRowLimit", required = false) Integer rowLimit) {
         List<Personne> acteurCherche = null;
         if (nom != null && !nom.equals("")) {
-            acteurCherche = this.acteurService.trouverActeurParNom(nom);
+            acteurCherche = this.acteurService.trouverActeurParNom(nom, rowLimit);
             return new ResponseEntity<>(acteurCherche, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/trouver/{nom}&{prenom}")
-    private ResponseEntity<Personne> trouverActeurParNomEtPrenom(@PathVariable("nom") String nom, @PathVariable String prenom) {
+    @GetMapping("/trouver/nom={nom}&prenom={prenom}&limit={sqlRowLimit}")
+    private ResponseEntity<Personne> trouverActeurParNomEtPrenom(@PathVariable("nom") String nom, @PathVariable String prenom, @PathVariable(name = "slqRowLimit", required = false) Integer rowLimit) {
         Personne acteurCherche = null;
         if ((nom != null && !nom.equals("")) && (prenom != null && !prenom.equals(""))) {
-            acteurCherche = this.acteurService.trouverActeurParNomEtPrenom(nom, prenom);
+            acteurCherche = this.acteurService.trouverActeurParNomEtPrenom(nom, prenom, rowLimit);
             return new ResponseEntity<>(acteurCherche, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/trouver-tous")
-    private ResponseEntity<List<Personne>> trouverTousLesActeurs() {
-        List<Personne> personnes = this.acteurService.trouverTousLesActeurs();
+    @GetMapping("/trouver-tous/limit={sqlRowLimit}")
+    private ResponseEntity<List<Personne>> trouverTousLesActeurs(@PathVariable(name = "slqRowLimit", required = false) Integer rowLimit) {
+        List<Personne> personnes = this.acteurService.trouverTousLesActeurs(rowLimit);
         return new ResponseEntity<>(personnes, HttpStatus.OK);
     }
 

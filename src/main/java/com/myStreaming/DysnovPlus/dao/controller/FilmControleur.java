@@ -11,10 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -75,8 +73,11 @@ public class FilmControleur {
     }
 
     @PostMapping("/trouverFilmParPersonne")
-    private ResponseEntity<List<Film>> trouverFilmParPersonnes(@RequestBody List<String> nomsPersonnes) {
+    private ResponseEntity<List<Film>> trouverFilmParPersonnes(@RequestBody List<Personne> nomsPersonnes) {
         List<Film> films = null;
+        for (int i = 0; i < nomsPersonnes.size(); i++) {
+            System.out.println(nomsPersonnes.get(i).getNom());
+        }
         if(nomsPersonnes != null) {
             films = this.filmService.trouverFilmParPersonnes(nomsPersonnes);
             if(films != null) {
@@ -116,21 +117,21 @@ public class FilmControleur {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PatchMapping("/ajouter-acteur-par-id/{idFilm}&{idActeur}")
+    @PatchMapping("/ajouter-acteur-par-id/filmId={idFilm}&acteurId={idActeur}")
     private ResponseEntity<Film> ajouterUnActeurAuFilm(@PathVariable("idFilm") Long idFilm, @PathVariable("idActeur") Long idActeur) {
         Film filmModifie = null;
         if (idFilm > 0 && idActeur > 0) {
-            filmModifie = this.filmService.ajouterActeurAuFilm(idFilm, idActeur);
+            filmModifie = this.filmService.ajouterActeurAuFilmParId(idFilm, idActeur);
             return new ResponseEntity<>(filmModifie, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PatchMapping("/ajouter-realisateur-par-id/{idFilm}&{idReal}")
+    @PatchMapping("/ajouter-realisateur-par-id/filmId={idFilm}&realId={idReal}")
     private ResponseEntity<Film> ajouterUnRealisateurAuFilm(@PathVariable("idFilm") Long idFilm, @PathVariable("idReal") Long idReal) {
         Film filmModifie = null;
         if (idFilm > 0 && idReal > 0) {
-            filmModifie = this.filmService.ajouterRealisateurAuFilm(idFilm, idReal);
+            filmModifie = this.filmService.ajouterRealisateurAuFilmParId(idFilm, idReal);
             return new ResponseEntity<>(filmModifie, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

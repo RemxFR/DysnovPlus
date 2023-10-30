@@ -10,10 +10,4 @@ import java.util.Optional;
 
 @Repository
 public interface IActeurRepo extends JpaRepository<Personne, Long> {
-
-    @Query("select a from Personne a where a.nom = ?1")
-    Optional<List<Personne>> trouverParNom(String nom);
-
-    @Query("select a from Personne a where a.nom = ?1 and a.prenom = ?2")
-    Optional<Personne> trouverParNomEtPrenom(String nom, String prenom);
 }

@@ -1,22 +1,26 @@
 package com.myStreaming.DysnovPlus.dao.service;
 
 import com.myStreaming.DysnovPlus.dao.repository.IActeurRepo;
+import com.myStreaming.DysnovPlus.entity.ESqlQueryUtils;
 import com.myStreaming.DysnovPlus.entity.Metier;
 import com.myStreaming.DysnovPlus.entity.Personne;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class ActeurService {
 
     private IActeurRepo acteurRepo;
     private MetierService metierService;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     public ActeurService(IActeurRepo acteurRepo, MetierService metierService) {
@@ -30,8 +34,8 @@ public class ActeurService {
         try {
             if (acteur.getMetiers() != null) {
                 for (int i = 0; i < acteur.getMetiers().size(); i++) {
-                   Metier metier = this.trouverMetierParNom(acteur.getMetiers().get(i).getMetier());
-                   metierListe.add(metier);
+                    Metier metier = this.trouverMetierParNom(acteur.getMetiers().get(i).getMetier());
+                    metierListe.add(metier);
                 }
                 acteur.setMetiers(metierListe);
             }
@@ -77,10 +81,13 @@ public class ActeurService {
         return acteurATrouver;
     }
 
-    public List<Personne> trouverTousLesActeurs() {
-        List<Personne> acteurs = null;
+    public List<Personne> trouverTousLesActeurs(Integer sqlRowLimit) {
+        List<Personne> acteurs = new ArrayList<>();
+        int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
         try {
-            acteurs = this.acteurRepo.findAll();
+            String queryWithSqlRowLimit = ESqlQueryUtils.FIND_PERSON_QUERY.getLabel() + this.byMetierQuery + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = entityManager.createNativeQuery(queryWithSqlRowLimit, Personne.class);
+            this.buildActeursListe(query, acteurs);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -102,26 +109,33 @@ public class ActeurService {
         return estSupprime;
     }
 
-    public List<Personne> trouverActeurParNom(String nom) {
+    public List<Personne> trouverActeurParNom(String nom, Integer sqlRowLimit) {
         List<Personne> listeActeurParNom = new ArrayList<>();
         try {
-            Optional<List<Personne>> optionalList = this.acteurRepo.trouverParNom(nom);
-            if (optionalList.isPresent()) {
-                listeActeurParNom = optionalList.get();
-            }
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
+            String queryStrg = ESqlQueryUtils.FIND_PERSON_QUERY.getLabel() + ESqlQueryUtils.NOM_QUERY.getLabel() + ESqlQueryUtils.ACTEUR_QUERY.getLabel();
+            String queryWithLimit = queryStrg + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = this.entityManager.createNativeQuery(queryWithLimit, Personne.class);
+            query.setParameter(1, nom);
+            this.buildActeursListe(query, listeActeurParNom);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return listeActeurParNom;
     }
 
-    public Personne trouverActeurParNomEtPrenom(String nom, String prenom) {
+
+
+    public Personne trouverActeurParNomEtPrenom(String nom, String prenom, Integer sqlRowLimit) {
         Personne acteur = null;
         try {
-            Optional<Personne> optional = this.acteurRepo.trouverParNomEtPrenom(nom, prenom);
-            if (optional.isPresent()) {
-                acteur = optional.get();
-            }
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
+            String queryStrg = ESqlQueryUtils.FIND_PERSON_QUERY.getLabel() + ESqlQueryUtils.NOM_PRENOM_QUERY.getLabel() + ESqlQueryUtils.ACTEUR_QUERY.getLabel();
+            String queryWithLimit = queryStrg + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = this.entityManager.createNativeQuery(queryWithLimit, Personne.class);
+            query.setParameter(1, nom);
+            query.setParameter(2, prenom);
+            acteur = (Personne) query.getSingleResult();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -134,5 +148,25 @@ public class ActeurService {
             metier = this.metierService.getMetier(metierLabel);
         }
         return metier;
+    }
+
+    private static void buildActeursListe(Query query, List<Personne> listeActeurParNom) {
+        List<Personne> queryResults = (List<Personne>) query.getResultList();
+        if (!queryResults.isEmpty()) {
+            for (Personne acteur : queryResults) {
+                Personne acteurTrouve = Personne.builder()
+                        .id(acteur.getId())
+                        .nom(acteur.getNom())
+                        .prenom(acteur.getPrenom())
+                        .age(acteur.getAge())
+                        .dateNaissance(acteur.getDateNaissance())
+                        .genrePersonne(acteur.getGenrePersonne())
+                        .nationalite(acteur.getNationalite())
+                        .metiers(acteur.getMetiers())
+                        .build();
+                listeActeurParNom.add(acteurTrouve);
+            }
+
+        }
     }
 }

@@ -3,11 +3,17 @@ package com.myStreaming.DysnovPlus.dao.service;
 import com.myStreaming.DysnovPlus.dao.repository.IFilmRepo;
 import com.myStreaming.DysnovPlus.entity.Film;
 import com.myStreaming.DysnovPlus.entity.Personne;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import org.hibernate.query.spi.Limit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +24,8 @@ public class FilmService {
     private IFilmRepo filmRepo;
     private ActeurService acteurService;
     private RealisateurService realisateurService;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     public FilmService(IFilmRepo filmRepo, ActeurService acteurService, RealisateurService realisateurService) {
@@ -100,23 +108,50 @@ public class FilmService {
 
 
     public List<Film> trouverFilmParPersonne(String nom) {
-        List<Film> filmsParGenre = null;
+        List<Film> filmsParPersonne = null;
         try {
-            filmsParGenre = this.filmRepo.trouverFilmsParPersonne(nom);
+            String queryStrg = "select f.id, f.titre, f.description, f.date_sortie, f.duree, f.genre from mydysnovplus.t_film f join mydysnovplus.personnes_films pf join mydysnovplus.t_personne tp on f.id = pf.film_id and tp.id = pf.personne where tp.nom = ?1";
+            Query query = entityManager.createNativeQuery(queryStrg);
+            query.setParameter(1, nom);
+            filmsParPersonne = query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return filmsParGenre;
+        return filmsParPersonne;
     }
 
-    public List<Film> trouverFilmParPersonnes(List<String> nomsPersonnes) {
-        List<Film> filmsParGenre = null;
+    public List<Film> trouverFilmParPersonnes(List<Personne> nomsPersonnes) {
+        List<Film> filmsParActeur = null;
+        List<String> andList = new ArrayList<>();
         try {
-            filmsParGenre = this.filmRepo.trouverFilmsParPersonnes(nomsPersonnes);
+
+            for (int i = 0; i < nomsPersonnes.size(); i++) {
+                String and = "";
+                if (i < nomsPersonnes.size() - 1) {
+                    and = "tp.nom = \'" + nomsPersonnes.get(i).getNom() + "\' and " + "tp.prenom = \'" + nomsPersonnes.get(i).getPrenom() + "\'" + " and ";
+                } else {
+                    and = "tp.nom = \'" + nomsPersonnes.get(i).getNom()+ "\' and " + "tp.prenom = \'" + nomsPersonnes.get(i).getPrenom() + "\'";
+                }
+                andList.add(and);
+                System.out.println(and);
+            }
+
+            Iterator<String> it = andList.iterator();
+            String andQueryStrg = "";
+            while (it.hasNext()) {
+                    andQueryStrg = andQueryStrg + it.next();
+            }
+            System.out.println(andQueryStrg);
+            String queryStrg = "select f.id, f.titre, f.description, f.date_sortie, f.duree, f.genre from mydysnovplus.t_film f join mydysnovplus.personnes_films pf join mydysnovplus.t_personne tp on f.id = pf.film_id and tp.id = pf.personne where " + andQueryStrg;
+
+            System.out.println(queryStrg);
+            Query query = entityManager.createNativeQuery(queryStrg);
+            filmsParActeur = query.getResultList();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return filmsParGenre;
+        return filmsParActeur;
     }
 
     public List<Film> trouverFilmsParNom(String nomFilm) {
@@ -133,8 +168,9 @@ public class FilmService {
         Film filmAModifier = null;
         try {
             filmAModifier = this.trouverFilm(id);
-            if (filmAModifier != null) {
+            if (filmAModifier != null && personne != null) {
                 filmAModifier.getPersonnes().add(personne);
+                this.filmRepo.save(filmAModifier);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,14 +178,15 @@ public class FilmService {
         return filmAModifier;
     }
 
-    public Film ajouterActeurAuFilm(Long idFilm, Long idActeur) {
+    public Film ajouterActeurAuFilmParId(Long filmId, Long acteurId) {
         Film filmAModifier = null;
-        Personne personneAAjouter = null;
+        Personne acteurExistant = null;
         try {
-            personneAAjouter = this.acteurService.trouverActeur(idActeur);
-            filmAModifier = this.trouverFilm(idFilm);
-            if (filmAModifier != null && personneAAjouter != null) {
-                filmAModifier.getPersonnes().add(personneAAjouter);
+            acteurExistant = this.acteurService.trouverActeur(acteurId);
+            filmAModifier = this.trouverFilm(filmId);
+            if (filmAModifier != null && acteurExistant != null) {
+                filmAModifier.getPersonnes().add(acteurExistant);
+                this.filmRepo.save(filmAModifier);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,18 +194,20 @@ public class FilmService {
         return filmAModifier;
     }
 
-    public Film ajouterRealisateurAuFilm(Long idFilm, Long idReal) {
+    public Film ajouterRealisateurAuFilmParId(Long filmId, Long realId) {
         Film filmAModifier = null;
-        Personne personneAAjouter = null;
+        Personne realisateurExistant = null;
         try {
-            personneAAjouter = this.realisateurService.trouverRealisateur(idReal);
-            filmAModifier = this.trouverFilm(idFilm);
-            if (filmAModifier != null && personneAAjouter != null) {
-                filmAModifier.getPersonnes().add(personneAAjouter);
+            realisateurExistant = this.realisateurService.trouverRealisateur(realId);
+            filmAModifier = this.trouverFilm(filmId);
+            if (filmAModifier != null && realisateurExistant != null) {
+                filmAModifier.getPersonnes().add(realisateurExistant);
+                this.filmRepo.save(filmAModifier);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return filmAModifier;
     }
+
 }
