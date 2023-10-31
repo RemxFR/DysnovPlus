@@ -116,7 +116,9 @@ public class FilmService {
         List<Film> filmsParPersonne = null;
         try {
             int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
-            String queryStrg = "select f.id, f.titre, f.description, f.date_sortie, f.duree, f.genre from mydysnovplus.t_film f join mydysnovplus.personnes_films pf join mydysnovplus.t_personne tp on f.id = pf.film_id and tp.id = pf.personne where tp.nom = ?1";
+            String queryStrg = "select f.id, f.titre, f.description, f.date_sortie, f.duree, f.genre " +
+                    "from mydysnovplus.t_film f join mydysnovplus.personnes_films pf join mydysnovplus.t_personne " +
+                    "tp on f.id = pf.film_id and tp.id = pf.personne where tp.nom = ?1";
             String queryWithRowLimit = queryStrg + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
             Query query = entityManager.createNativeQuery(queryWithRowLimit, Film.class);
             query.setParameter(1, nom);
@@ -149,7 +151,9 @@ public class FilmService {
                     andQueryStrg = andQueryStrg + it.next();
             }
             int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
-            String queryStrg = "select f.id, f.titre, f.description, f.date_sortie, f.duree, f.genre from mydysnovplus.t_film f join mydysnovplus.personnes_films pf join mydysnovplus.t_personne tp on f.id = pf.film_id and tp.id = pf.personne where " + andQueryStrg;
+            String queryStrg = "select f.id, f.titre, f.description, f.date_sortie, f.duree, f.genre " +
+                    "from mydysnovplus.t_film f join mydysnovplus.personnes_films pf join mydysnovplus.t_personne tp " +
+                    "on f.id = pf.film_id and tp.id = pf.personne where " + andQueryStrg;
             String queryWithRowLimit = queryStrg + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
             Query query = entityManager.createNativeQuery(queryWithRowLimit, Film.class);
             filmsParActeur = (List<Film>) query.getResultList();
