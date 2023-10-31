@@ -1,6 +1,7 @@
 package com.myStreaming.DysnovPlus.dao.service;
 
 import com.myStreaming.DysnovPlus.dao.repository.IFilmRepo;
+import com.myStreaming.DysnovPlus.entity.ESqlQueryUtils;
 import com.myStreaming.DysnovPlus.entity.Film;
 import com.myStreaming.DysnovPlus.entity.Personne;
 import jakarta.persistence.EntityManager;
@@ -76,10 +77,14 @@ public class FilmService {
         return filmATrouver;
     }
 
-    public List<Film> trouverTousLesFilms() {
+    public List<Film> trouverTousLesFilms(Integer sqlRowLimit) {
         List<Film> films = null;
         try {
-            return this.filmRepo.findAll();
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
+            String queryString = "Select * from mydysnovplus.t_film ";
+            String queryWithRowLimit = queryString +  ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = this.entityManager.createNativeQuery(queryWithRowLimit, Film.class);
+            films = (List<Film>) query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -107,20 +112,22 @@ public class FilmService {
     }
 
 
-    public List<Film> trouverFilmParPersonne(String nom) {
+    public List<Film> trouverFilmParPersonne(String nom, Integer sqlRowLimit) {
         List<Film> filmsParPersonne = null;
         try {
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
             String queryStrg = "select f.id, f.titre, f.description, f.date_sortie, f.duree, f.genre from mydysnovplus.t_film f join mydysnovplus.personnes_films pf join mydysnovplus.t_personne tp on f.id = pf.film_id and tp.id = pf.personne where tp.nom = ?1";
-            Query query = entityManager.createNativeQuery(queryStrg);
+            String queryWithRowLimit = queryStrg + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = entityManager.createNativeQuery(queryWithRowLimit, Film.class);
             query.setParameter(1, nom);
-            filmsParPersonne = query.getResultList();
+            filmsParPersonne = (List<Film>) query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return filmsParPersonne;
     }
 
-    public List<Film> trouverFilmParPersonnes(List<Personne> nomsPersonnes) {
+    public List<Film> trouverFilmParPersonnes(List<Personne> nomsPersonnes, Integer sqlRowLimit) {
         List<Film> filmsParActeur = null;
         List<String> andList = new ArrayList<>();
         try {
@@ -141,12 +148,11 @@ public class FilmService {
             while (it.hasNext()) {
                     andQueryStrg = andQueryStrg + it.next();
             }
-            System.out.println(andQueryStrg);
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
             String queryStrg = "select f.id, f.titre, f.description, f.date_sortie, f.duree, f.genre from mydysnovplus.t_film f join mydysnovplus.personnes_films pf join mydysnovplus.t_personne tp on f.id = pf.film_id and tp.id = pf.personne where " + andQueryStrg;
-
-            System.out.println(queryStrg);
-            Query query = entityManager.createNativeQuery(queryStrg);
-            filmsParActeur = query.getResultList();
+            String queryWithRowLimit = queryStrg + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = entityManager.createNativeQuery(queryWithRowLimit, Film.class);
+            filmsParActeur = (List<Film>) query.getResultList();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -154,14 +160,18 @@ public class FilmService {
         return filmsParActeur;
     }
 
-    public List<Film> trouverFilmsParNom(String nomFilm) {
-        List<Film> filmsParGenre = null;
+    public List<Film> trouverFilmsParNom(String nomFilm, Integer sqlRowLimit) {
+        List<Film> filmsParNom = null;
         try {
-            filmsParGenre = this.filmRepo.trouverFilmsParNom(nomFilm);
+            int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
+            String queryStrg = "select f from Film f where f.titre = ?1";
+            String queryWithRowLimit = queryStrg + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            Query query = this.entityManager.createNativeQuery(queryWithRowLimit, Film.class);
+            filmsParNom = (List<Film>) query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return filmsParGenre;
+        return filmsParNom;
     }
 
     public Film ajouterPersonneAuFilm(Long id, Personne personne) {

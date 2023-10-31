@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -39,20 +40,20 @@ public class FilmControleur {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/trouverTous")
-    private ResponseEntity<List<Film>> trouverTousLesFilms() {
-        List<Film> films = this.filmService.trouverTousLesFilms();
+    @GetMapping("/trouverTous/limit={sqlRowLimit}")
+    private ResponseEntity<List<Film>> trouverTousLesFilms(@RequestParam(name = "sqlRowLimit", required = false) Integer sqlRowLimit) {
+        List<Film> films = this.filmService.trouverTousLesFilms(sqlRowLimit);
         if (films != null) {
             return new ResponseEntity<>(films, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/trouverFilm/{nomFilm}")
-    private ResponseEntity<List<Film>> trouverFilmParNom(@PathVariable("nomFilm") String nomFilm) {
+    @GetMapping("/trouverFilm/nomFilm={nomFilm}&limit={sqlRowLimit}")
+    private ResponseEntity<List<Film>> trouverFilmParNom(@PathVariable("nomFilm") String nomFilm, @RequestParam(name = "sqlRowLimit", required = false) Integer sqlRowLimit) {
         List<Film> films = null;
         if (nomFilm != null && !nomFilm.equals("")) {
-            films = this.filmService.trouverFilmsParNom(nomFilm);
+            films = this.filmService.trouverFilmsParNom(nomFilm, sqlRowLimit);
             if (films != null) {
                 return new ResponseEntity<>(films, HttpStatus.OK);
             }
@@ -60,11 +61,11 @@ public class FilmControleur {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/trouverFilmParPersonne/{nom}")
-    private ResponseEntity<List<Film>> trouverFilmParPersonne(@PathVariable("nom") String nom) {
+    @GetMapping("/trouverFilmParPersonne/nom={nom}&limit={sqlRowLimit}")
+    private ResponseEntity<List<Film>> trouverFilmParPersonne(@PathVariable("nom") String nom, @RequestParam(name = "sqlRowLimit", required = false) Integer sqlRowLimit) {
         List<Film> films = null;
         if(nom != null && !nom.equals("")) {
-            films = this.filmService.trouverFilmParPersonne(nom);
+            films = this.filmService.trouverFilmParPersonne(nom, sqlRowLimit);
             if(films != null) {
                 return new ResponseEntity<>(films, HttpStatus.OK);
             }
@@ -72,14 +73,14 @@ public class FilmControleur {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/trouverFilmParPersonne")
-    private ResponseEntity<List<Film>> trouverFilmParPersonnes(@RequestBody List<Personne> nomsPersonnes) {
+    @PostMapping("/trouverFilmParPersonne/limit={sqlRowLimit}")
+    private ResponseEntity<List<Film>> trouverFilmParPersonnes(@RequestBody List<Personne> nomsPersonnes, @RequestParam(name = "sqlRowLimit", required = false) Integer sqlRowLimit) {
         List<Film> films = null;
         for (int i = 0; i < nomsPersonnes.size(); i++) {
             System.out.println(nomsPersonnes.get(i).getNom());
         }
         if(nomsPersonnes != null) {
-            films = this.filmService.trouverFilmParPersonnes(nomsPersonnes);
+            films = this.filmService.trouverFilmParPersonnes(nomsPersonnes, sqlRowLimit);
             if(films != null) {
                 return new ResponseEntity<>(films, HttpStatus.OK);
             }

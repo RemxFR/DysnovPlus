@@ -85,7 +85,7 @@ public class ActeurService {
         List<Personne> acteurs = new ArrayList<>();
         int rowLimit = ESqlQueryUtils.getRowLimit(sqlRowLimit);
         try {
-            String queryWithSqlRowLimit = ESqlQueryUtils.FIND_PERSON_QUERY.getLabel() + this.byMetierQuery + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
+            String queryWithSqlRowLimit = ESqlQueryUtils.FIND_PERSON_QUERY.getLabel() + ESqlQueryUtils.ACTEUR_QUERY.getLabel() + ESqlQueryUtils.ROW_LIMIT_LABEL.getLabel() + rowLimit;
             Query query = entityManager.createNativeQuery(queryWithSqlRowLimit, Personne.class);
             this.buildActeursListe(query, acteurs);
         } catch (Exception e) {
